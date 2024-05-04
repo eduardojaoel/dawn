@@ -1,0 +1,286 @@
+{{ 'cs-collage.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  /* Layout */
+  #cs-{{ section.id }} {
+    max-width: {{ section.settings.section_width }}px;
+    padding-top: {{ section.settings.padding_top | times: 0.75 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    #cs-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  /* Heading */
+  #cs-{{ section.id }} .cs-heading {
+    font-size: calc(({{ section.settings.body_size }}px * {{ section.settings.heading_size }}) * 0.8);
+  }
+  @media screen and (min-width: 750px) {
+    #cs-{{ section.id }} .cs-heading {
+      font-size: calc({{ section.settings.body_size }}px * {{ section.settings.heading_size }});
+    }
+  }
+
+  /* Text color */
+  #cs-{{ section.id }} .cs-grid-item__heading,
+  #cs-{{ section.id }} .cs-grid-item__button {
+    color: {{ section.settings.text_color }};
+    font-size: {{ section.settings.body_size }}px;
+  }
+  /* Placeholder text color */
+  #cs-{{ section.id }} .cs-grid-item__heading.cs-no-image,
+  #cs-{{ section.id }} .cs-grid-item__button.cs-no-image {
+    color: #333;
+  }
+
+  /* Grid gap */
+  #cs-{{ section.id }} .cs-grid {
+    gap: {{ section.settings.grid_gap }}px;
+  }
+
+  /* Items border radius */
+  #cs-{{ section.id }} .cs-grid-item {
+    border-radius: {{ section.settings.grid_border_radius }}px;
+  }
+{% endstyle %}
+
+<div id="cs-{{ section.id }}" class="cs-container">
+  <div class="cs-wrapper">
+    {% comment %} Section heading {% endcomment %}
+    {% if section.settings.heading != blank %}
+      <div class="cs-section-heading">
+        <h2 class="cs-heading">{{ section.settings.heading }}</h2>
+      </div>
+    {% endif %}
+    {% comment %} Section grid {% endcomment %}
+    <div class="cs-grid cs-grid-size-{{ section.blocks.size }}">
+      {% for block in section.blocks %}
+        {% if block.settings.heading != blank or block.settings.link != blank %}
+          <a
+            class="cs-item-wrapper"
+            {% if block.settings.link != blank %}
+              href="{{ block.settings.link }}"
+            {% endif %}
+          >
+            <div
+              class="cs-grid-item {% if section.settings.enable_hover_animation %}cs-hover-animation{% endif %}"
+              {{ block.shopify_attributes }}
+            >
+              {% if block.settings.image != blank %}
+                {{
+                  block.settings.image
+                  | image_url: width: 1000
+                  | image_tag:
+                    widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500',
+                    class: 'cs-grid-item__image'
+                }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'cs-grid-item__image' }}
+              {% endif %}
+              {% if section.settings.enable_overlay and block.settings.image %}
+                <div class="cs-overlay-gradient"></div>
+              {% endif %}
+              {% if block.settings.heading != blank %}
+                <h3 class="cs-grid-item__heading {% unless block.settings.image %}cs-no-image{% endunless %}">
+                  {{ block.settings.heading }}
+                </h3>
+              {% endif %}
+              {% if block.settings.link_label != blank %}
+                <span class="cs-grid-item__button {% unless block.settings.image %}cs-no-image{% endunless %}">
+                  {{- block.settings.link_label -}}
+                </span>
+              {% endif %}
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "[CS] Collage",
+  "class": "cs-section cs-collage",
+  "tag": "section",
+  "max_blocks": 7,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título de la sección",
+      "default": "Nuestras colecciones"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del título",
+      "options": [
+        {
+          "value": "3.0",
+          "label": "Extra grande"
+        },
+        {
+          "value": "2.5",
+          "label": "Más grande"
+        },
+        {
+          "value": "2.0",
+          "label": "Grande"
+        },
+        {
+          "value": "1.7",
+          "label": "Mediano"
+        },
+        {
+          "value": "1.4",
+          "label": "Pequeño"
+        },
+        {
+          "value": "1.2",
+          "label": "Muy pequeño"
+        }
+      ],
+      "default": "2.0"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color del texto",
+      "default": "#fff"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_overlay",
+      "label": "Habilitar superposición",
+      "default": true,
+      "info": "Agrega un degradado sobre las imágenes de los elementos. Sólo se mostrará si cuenta con una imagen."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hover_animation",
+      "label": "Habilitar animación al pasar el cursor",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Espaciado entre elementos",
+      "default": 24,
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "grid_border_radius",
+      "label": "Radio de borde de los elementos",
+      "default": 8,
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "label": "Tamaño del texto del cuerpo",
+      "default": 16,
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_width",
+      "label": "Ancho de la sección",
+      "min": 1000,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espaciado superior",
+      "default": 30,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaciado inferior",
+      "default": 30,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Categoría",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Categoría"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Texto del botón",
+          "default": "Ver más"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "URL del botón"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "[CS] Collage",
+      "category": "CS",
+      "blocks": [
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
